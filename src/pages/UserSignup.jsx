@@ -11,7 +11,7 @@ const UserSignup = () => {
     email: '',
     password: '',
     confirmPassword: '',
-    roles: ['Borrower'],
+    roles: ['Investor'],
     contactNumber: '',
     address: {
       street: '',
@@ -136,7 +136,7 @@ const UserSignup = () => {
         <div className="absolute -bottom-8 -right-4 w-72 h-72 bg-blue-300 rounded-full mix-blend-multiply filter blur-xl opacity-70 animate-blob animation-delay-2000"></div>
         
         {/* Main Card */}
-        <div className="relative bg-white/80 backdrop-blur-lg rounded-2xl shadow-xl p-8 border border-white/20">
+        <div className="relative bg-white/80 backdrop-blur-lg rounded-2xl shadow-xl p-8 border border-white/20 " >
           <div className="text-center mb-8">
             <h1 className="text-3xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
               Create Account
@@ -193,7 +193,7 @@ const UserSignup = () => {
                   onChange={handleInputChange}
                 />
 
-                <div className="space-y-2">
+                {/* <div className="space-y-2">
                   <label className="block text-sm font-medium text-gray-700">Select Role</label>
                   <div className="flex gap-4">
                     {['Borrower', 'Investor'].map((role) => (
@@ -211,7 +211,7 @@ const UserSignup = () => {
                       </button>
                     ))}
                   </div>
-                </div>
+                </div> */}
               </div>
             ) : (
               // ... Rest of the Step 2 form fields remain the same

@@ -6,17 +6,17 @@ import {
   ClipboardList,
   UserCircle,
   MenuIcon,
-  HandHelping,
-  ChartCandlestick,
-  Landmark,
   LogOut,
 } from "lucide-react";
+import LoanSection from "./LoanSection";
 import UserProfile from "./UserProfile";
 import InvestmentPage from "./InvestmentPage";
-import ManageAssets from "./ManageAssets";
-import AdminLoanDashboard from "./AdminLoanDashboard";
+import WalletPage from "./WalletPage";
+import PortfolioOverview from "./Portfolio";
+import LoanStatus from "./LoanStatus";
+
 const DashboardLayout = () => {
-  const [activeTab, setActiveTab] = useState("loanProposal");
+  const [activeTab, setActiveTab] = useState("portfolio");
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isLogoutDialogOpen, setIsLogoutDialogOpen] = useState(false);
   const clearCookies = () => {
@@ -26,34 +26,29 @@ const DashboardLayout = () => {
         .replace(/=.*/, "=;expires=" + new Date().toUTCString() + ";path=/");
     });
   };
-
   const menuItems = [
     {
-      id: "loanProposal",
-      label: "Loan Proposal",
-      icon: <HandHelping size={20} />,
+      id: "portfolio",
+      label: "Portfolio",
+      icon: <LayoutDashboard size={20} />,
     },
-    {
-      id: "freezeAssets",
-      label: "Manage Assets",
-      icon: <ChartCandlestick size={20} />,
-    },
-
+    { id: "invest", label: "Invest", icon: <Wallet size={20} /> },
+    { id: "borrow", label: "Borrow Loan", icon: <BadgeDollarSign size={20} /> },
     {
       id: "loanStatus",
       label: "Loan Status",
       icon: <ClipboardList size={20} />,
     },
+    { id: "wallet", label: "Wallet", icon: <Wallet size={20} /> },
     { id: "profile", label: "User Profile", icon: <UserCircle size={20} /> },
     { id: "logout", label: "Logout", icon: <LogOut size={20} /> },
   ];
 
   // Placeholder components for each section
   const components = {
-    loanProposal: () => <AdminLoanDashboard />,
-    freezeAssets: () => <ManageAssets />,
-    approveLoans: () => <AdminLoanDashboard />,
-
+    portfolio: () => (
+      <PortfolioOverview />
+    ),
     logout: () => (
       <>
         {!isLogoutDialogOpen && (
@@ -98,34 +93,11 @@ const DashboardLayout = () => {
         </button>
       </>
     ),
+    wallet: () => <WalletPage />,
+    invest: () => <InvestmentPage />,
+    borrow: () => <LoanSection />,
     loanStatus: () => (
-      <div className="p-6">
-        <h2 className="text-2xl font-bold mb-4">Loan Status</h2>
-        <div className="bg-white rounded-lg shadow overflow-hidden">
-          <table className="w-full">
-            <thead className="bg-gray-50">
-              <tr>
-                <th className="p-4 text-left">Loan ID</th>
-                <th className="p-4 text-left">Amount</th>
-                <th className="p-4 text-left">Status</th>
-                <th className="p-4 text-left">Next Payment</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr className="border-t">
-                <td className="p-4">L123456</td>
-                <td className="p-4">$5,000</td>
-                <td className="p-4">
-                  <span className="bg-green-100 text-green-800 px-2 py-1 rounded">
-                    Active
-                  </span>
-                </td>
-                <td className="p-4">Mar 15, 2024</td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-      </div>
+      <LoanStatus/>
     ),
     profile: () => <UserProfile />,
   };
@@ -147,7 +119,8 @@ const DashboardLayout = () => {
         <aside
           className={`${
             isMobileMenuOpen ? "block" : "hidden"
-          } lg:block fixed  lg:static w-64 h-full bg-white border-r overflow-y-auto`}
+          } lg:block fixed  lg:static w-64 h-full bg-white border-r overflow-y-auto z-50 `}
+          
         >
           <nav className="p-4">
             <div className="space-y-2">

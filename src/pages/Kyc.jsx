@@ -81,17 +81,12 @@ const KYCForm = () => {
         data.data.user.kycVerified = true;
         Cookies.set("userData",JSON.stringify(data));
         switch (role) {
-          case "Investor":
-            navigate("/investor-dashboard");
-            break;
-          case "Borrower":
-            navigate("/borrower-dashboard");
-            break;
+
           case "Admin":
             navigate("/admin-dashboard");
             break;
           default:
-            navigate("/dashboard");
+            navigate("/user-dashboard");
         }
       }
       console.log("Response:", response.data);

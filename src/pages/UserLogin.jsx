@@ -38,17 +38,11 @@ const UserLogin = () => {
   // Function to handle role-based redirection
   const handleRoleBasedRedirect = (role) => {
     switch (role) {
-      case "Investor":
-        navigate("/investor-dashboard");
-        break;
-      case "Borrower":
-        navigate("/borrower-dashboard");
-        break;
       case "Admin":
         navigate("/admin-dashboard");
         break;
       default:
-        navigate("/dashboard");
+        navigate("/user-dashboard");
     }
   };
 
@@ -118,7 +112,7 @@ const UserLogin = () => {
         <div className="absolute -bottom-8 -right-4 w-72 h-72 bg-blue-300 rounded-full mix-blend-multiply filter blur-xl opacity-70 animate-blob animation-delay-2000"></div>
 
         {/* Main Card */}
-        <div className="relative bg-white/80 backdrop-blur-lg rounded-2xl shadow-xl p-8 border border-white/20">
+        <div className="relative bg-white/80 backdrop-blur-lg rounded-2xl shadow-xl p-8 border border-white/20 m-3">
           <div className="text-center mb-8">
             <h1 className="text-3xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
               Welcome Back

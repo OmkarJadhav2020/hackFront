@@ -5,7 +5,8 @@ import {
   BadgeDollarSign,
   ClipboardList,
   UserCircle,
-  MenuIcon
+  MenuIcon,
+  LogOut
 } from 'lucide-react';
 import LoanSection from './LoanSection';
 import UserProfile from './UserProfile';
@@ -21,31 +22,13 @@ const DashboardLayout = () => {
     { id: 'freezeAssets', label: 'Manage Assets', icon: <ChartCandlestick size={20} /> },
     { id: 'approveLoans', label: 'Approve Loans', icon: <ChartCandlestick size={20} /> },
     { id: 'loanStatus', label: 'Loan Status', icon: <ClipboardList size={20} /> },
-    { id: 'wallet', label: 'Wallet', icon: <Wallet size={20} />  },
-    { id: 'profile', label: 'User Profile', icon: <UserCircle size={20} /> }
+    { id: 'profile', label: 'User Profile', icon: <UserCircle size={20} /> },
+    { id: 'logout', label: 'Logout', icon: <LogOut size={20}/> }
   ];
 
   // Placeholder components for each section
   const components = {
-    portfolio: () => (
-      <div className="p-6">
-        <h2 className="text-2xl font-bold mb-4">Portfolio Overview</h2>
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-          <div className="bg-white p-4 rounded-lg shadow">
-            <h3 className="font-semibold text-gray-700">Total Invested</h3>
-            <p className="text-2xl font-bold">$12,450</p>
-          </div>
-          <div className="bg-white p-4 rounded-lg shadow">
-            <h3 className="font-semibold text-gray-700">Active Investments</h3>
-            <p className="text-2xl font-bold">8</p>
-          </div>
-          <div className="bg-white p-4 rounded-lg shadow">
-            <h3 className="font-semibold text-gray-700">Returns Generated</h3>
-            <p className="text-2xl font-bold">$1,245</p>
-          </div>
-        </div>
-      </div>
-    ),
+
     wallet: () => (
       <WalletPage />
     ),

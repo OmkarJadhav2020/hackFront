@@ -12,7 +12,7 @@ import { Navigate, useNavigate } from "react-router-dom";
 import Cookies from 'js-cookie';
 const UserProfile = () => {
   const navigate = useNavigate();
-  // Updated getUserData function to properly parse the nested data structure
+
   const getUserData = () => {
     try {
       const rawData = Cookies.get("userData");
@@ -20,7 +20,7 @@ const UserProfile = () => {
 
       const parsedData = JSON.parse(rawData);
       console.log(parsedData);
-      // Access the nested user object in the data structure
+ 
       return parsedData?.data?.user;
     } catch (error) {
       console.error("Error parsing user data:", error);
@@ -71,13 +71,7 @@ const UserProfile = () => {
         {/* Header with Logout */}
         <div className="flex justify-between items-center mb-6">
           <h1 className="text-2xl font-bold text-gray-800">User Profile</h1>
-          <button
-            onClick={handleLogout}
-            className="flex items-center px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
-          >
-            <LogOut size={20} className="mr-2" />
-            Logout
-          </button>
+
         </div>
 
         {/* Profile Content */}
