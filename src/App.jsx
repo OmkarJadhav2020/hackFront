@@ -60,7 +60,7 @@ const App = () => {
         element={
           <LandingPage />
         }/>
-        {/* <Route path="*" element={<Navigate to="/landing" />} /> */}
+        <Route path="*" element={<Navigate to="/landing" />} />
       </Routes>
     </Router>
   );

@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 
 const LandingPage = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-
+  const navigate = useNavigate();
   const featuredCampaigns = [
     {
       title: "Small Business Growth",
@@ -96,7 +97,7 @@ const LandingPage = () => {
               <p className="text-xl text-gray-600 mb-8">
                 Join our community of investors making a difference through collaborative investments and lending.
               </p>
-              <button className="bg-green-500 text-white px-8 py-4 rounded-full text-lg font-semibold hover:bg-green-600 transition-colors">
+              <button onClick={()=>{navigate("/login")}} className="bg-green-500 text-white px-8 py-4 rounded-full text-lg font-semibold hover:bg-green-600 transition-colors">
                 Start Investing
               </button>
             </div>

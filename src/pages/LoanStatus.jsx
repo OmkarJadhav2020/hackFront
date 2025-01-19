@@ -1,33 +1,70 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { LineChart, Line, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import { AlertCircle, CheckCircle, Clock, TrendingUp } from 'lucide-react';
+import Cookies from "js-cookie";
 
 const LoanStatus = () => {
-  // Sample data based on the schema
-  const loans = [
-    {
-      loanId: "L1001",
-      totalAmountNeeded: 50000,
-      totalAmountAllocated: 35000,
-      interestRate: 12,
-      fundingDeadline: "2025-02-15",
-      status: "open",
-      fundingProgress: 70,
-    },
-    {
-      loanId: "L1002",
-      totalAmountNeeded: 75000,
-      totalAmountAllocated: 75000,
-      interestRate: 14,
-      fundingDeadline: "2025-02-10",
-      status: "fully-funded",
-      fundingProgress: 100,
-    }
-  ];
+  const [portfolioData, setPortfolioData] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    const fetchPortfolioData = async () => {
+      try {
+        const userId = Cookies.get('userId');
+        if (!userId) {
+          throw new Error('User ID not found');
+        }
+        const response = await fetch(`http://localhost:3000/api/${userId}/portfolio`);
+        if (!response.ok) {
+          throw new Error('Failed to fetch portfolio data');
+        }
+
+        const data = await response.json();
+        setPortfolioData(data);
+      } catch (err) {
+        setError(err.message);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchPortfolioData();
+  }, []);
+
+  if (loading) {
+    return <div className="p-6">Loading...</div>;
+  }
+
+  if (error) {
+    return <div className="p-6 text-red-600">Error: {error}</div>;
+  }
+
+  if (!portfolioData) {
+    return <div className="p-6">No data available</div>;
+  }
+
+  const loans = portfolioData.loanDetails.map(loan => ({
+    loanId: loan.loanId,
+    totalAmountNeeded: loan.loanAmount,
+    totalAmountAllocated: loan.totalAmountAllocated || 0,
+    interestRate: loan.interestRate,
+    fundingDeadline: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(), // 30 days from now
+    status: loan.status,
+    fundingProgress: ((loan.totalAmountAllocated || 0) / loan.loanAmount) * 100
+  }));
+
+  // Calculate stats
+  const totalActiveLoans = loans.length;
+  const totalPendingAmount = loans.reduce((sum, loan) => 
+    sum + (loan.totalAmountNeeded - loan.totalAmountAllocated), 0);
+  const totalFundedAmount = loans.reduce((sum, loan) => 
+    sum + loan.totalAmountAllocated, 0);
 
   const statusColors = {
     'open': 'bg-blue-100 text-blue-800',
-    'fully-funded': 'bg-green-100 text-green-800',
+    'approved': 'bg-green-100 text-green-800',
+    'disbursed': 'bg-green-100 text-green-800',
     'closed': 'bg-gray-100 text-gray-800'
   };
 
@@ -35,13 +72,48 @@ const LoanStatus = () => {
     switch(status) {
       case 'open':
         return <Clock className="w-4 h-4" />;
-      case 'fully-funded':
+      case 'approved':
+      case 'disbursed':
         return <CheckCircle className="w-4 h-4" />;
       case 'closed':
         return <AlertCircle className="w-4 h-4" />;
       default:
         return null;
     }
+  };
+
+  // Prepare data for the line chart - using cumulative funding over loans
+  const lineChartData = loans.reduce((acc, loan) => {
+    const month = new Date().toLocaleString('default', { month: 'short' });
+    const existingMonth = acc.find(item => item.date === month);
+    if (existingMonth) {
+      existingMonth.amount += loan.totalAmountAllocated;
+    } else {
+      acc.push({
+        date: month,
+        amount: loan.totalAmountAllocated
+      });
+    }
+    return acc;
+  }, []);
+
+  // Prepare data for the pie chart
+  const statusCounts = loans.reduce((acc, loan) => {
+    acc[loan.status] = (acc[loan.status] || 0) + 1;
+    return acc;
+  }, {});
+
+  const pieChartData = Object.entries(statusCounts).map(([status, count]) => ({
+    name: status.charAt(0).toUpperCase() + status.slice(1),
+    value: count
+  }));
+
+  const formatCurrency = (amount) => {
+    return new Intl.NumberFormat('en-IN', {
+      style: 'currency',
+      currency: 'INR',
+      maximumFractionDigits: 0
+    }).format(amount);
   };
 
   return (
@@ -59,7 +131,7 @@ const LoanStatus = () => {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-gray-600">Total Active Loans</p>
-                <p className="text-2xl font-bold text-gray-900">8</p>
+                <p className="text-2xl font-bold text-gray-900">{totalActiveLoans}</p>
               </div>
               <div className="p-3 bg-blue-50 rounded-lg">
                 <TrendingUp className="w-6 h-6 text-blue-600" />
@@ -71,7 +143,7 @@ const LoanStatus = () => {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-gray-600">Pending Amount</p>
-                <p className="text-2xl font-bold text-gray-900">₹1,25,000</p>
+                <p className="text-2xl font-bold text-gray-900">{formatCurrency(totalPendingAmount)}</p>
               </div>
               <div className="p-3 bg-orange-50 rounded-lg">
                 <Clock className="w-6 h-6 text-orange-600" />
@@ -83,7 +155,7 @@ const LoanStatus = () => {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-gray-600">Funded Amount</p>
-                <p className="text-2xl font-bold text-gray-900">₹3,50,000</p>
+                <p className="text-2xl font-bold text-gray-900">{formatCurrency(totalFundedAmount)}</p>
               </div>
               <div className="p-3 bg-green-50 rounded-lg">
                 <CheckCircle className="w-6 h-6 text-green-600" />
@@ -114,10 +186,10 @@ const LoanStatus = () => {
                 {loans.map((loan) => (
                   <tr key={loan.loanId}>
                     <td className="px-6 py-4">
-                      <span className="font-medium">{loan.loanId}</span>
+                      <span className="font-medium">{loan.loanId.slice(-6)}</span>
                     </td>
-                    <td className="px-6 py-4">₹{loan.totalAmountNeeded.toLocaleString()}</td>
-                    <td className="px-6 py-4">₹{loan.totalAmountAllocated.toLocaleString()}</td>
+                    <td className="px-6 py-4">{formatCurrency(loan.totalAmountNeeded)}</td>
+                    <td className="px-6 py-4">{formatCurrency(loan.totalAmountAllocated)}</td>
                     <td className="px-6 py-4">
                       <div className="w-full bg-gray-100 rounded-full h-2.5">
                         <div 
@@ -125,7 +197,7 @@ const LoanStatus = () => {
                           style={{ width: `${loan.fundingProgress}%` }}
                         ></div>
                       </div>
-                      <span className="text-sm text-gray-600 mt-1">{loan.fundingProgress}%</span>
+                      <span className="text-sm text-gray-600 mt-1">{loan.fundingProgress.toFixed(1)}%</span>
                     </td>
                     <td className="px-6 py-4">{loan.interestRate}%</td>
                     <td className="px-6 py-4">{new Date(loan.fundingDeadline).toLocaleDateString()}</td>
@@ -148,21 +220,17 @@ const LoanStatus = () => {
             <h3 className="text-lg font-semibold mb-4">Funding Progress Over Time</h3>
             <div className="h-64">
               <ResponsiveContainer width="100%" height="100%">
-                <LineChart data={[
-                  { date: 'Jan', amount: 25000 },
-                  { date: 'Feb', amount: 45000 },
-                  { date: 'Mar', amount: 65000 },
-                  { date: 'Apr', amount: 85000 }
-                ]}>
+                <LineChart data={lineChartData}>
                   <CartesianGrid strokeDasharray="3 3" />
                   <XAxis dataKey="date" />
                   <YAxis />
-                  <Tooltip />
+                  <Tooltip formatter={(value) => formatCurrency(value)} />
                   <Line 
                     type="monotone" 
                     dataKey="amount" 
                     stroke="#2563eb" 
                     strokeWidth={2}
+                    name="Allocated Amount"
                   />
                 </LineChart>
               </ResponsiveContainer>
@@ -175,20 +243,16 @@ const LoanStatus = () => {
               <ResponsiveContainer width="100%" height="100%">
                 <PieChart>
                   <Pie
-                    data={[
-                      { name: 'Open', value: 4 },
-                      { name: 'Fully Funded', value: 3 },
-                      { name: 'Closed', value: 1 }
-                    ]}
+                    data={pieChartData}
                     cx="50%"
                     cy="50%"
                     outerRadius={80}
                     dataKey="value"
                     label={({name, percent}) => `${name} ${(percent * 100).toFixed(0)}%`}
                   >
-                    <Cell fill="#3b82f6" />
-                    <Cell fill="#10b981" />
-                    <Cell fill="#6b7280" />
+                    {pieChartData.map((_, index) => (
+                      <Cell key={`cell-${index}`} fill={['#3b82f6', '#10b981', '#6b7280'][index % 3]} />
+                    ))}
                   </Pie>
                   <Tooltip />
                 </PieChart>

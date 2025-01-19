@@ -99,6 +99,7 @@ const LoanManagement = () => {
       );
 
       setCreditScore(response.data.creditScore);
+      window.location.reload();
       // await fetchLoans();
       // setActiveTab("status");
     } catch (err) {
@@ -243,6 +244,21 @@ const LoanManagement = () => {
                       value={formData.panNumber}
                       onChange={handleInputChange}
                       pattern="[A-Z]{5}[0-9]{4}[A-Z]{1}"
+                      className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                      required
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700">
+                      Increase Stakes
+                    </label>
+                    <input
+                      type="text"
+                      name="bidHigh"
+                      // value={formData.bidHigh}
+                      onChange={handleInputChange}
+                      // pattern="[A-Z]{5}[0-9]{4}[A-Z]{1}"
+                      // defaultValue={0}
                       className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
                       required
                     />

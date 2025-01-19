@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { LineChart, Line, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import { Wallet, TrendingUp, Users, PiggyBank } from 'lucide-react';
-import Cookies from "js-cookie"
+import Cookies from "js-cookie";
+
 const PortfolioOverview = () => {
   const [portfolioData, setPortfolioData] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -14,14 +15,12 @@ const PortfolioOverview = () => {
         if (!userId) {
           throw new Error('User ID not found');
         }
-        console.log(`http://localhost:3000/api/${userId}/portfolio`);
         const response = await fetch(`http://localhost:3000/api/${userId}/portfolio`);
         if (!response.ok) {
           throw new Error('Failed to fetch portfolio data');
         }
 
         const data = await response.json();
-        console.log(data)
         setPortfolioData(data);
       } catch (err) {
         setError(err.message);
@@ -33,40 +32,51 @@ const PortfolioOverview = () => {
     fetchPortfolioData();
   }, []);
 
-  // if (loading) {
-  //   return <div className="p-6">Loading...</div>;
-  // }
+  if (loading) {
+    return <div className="p-6">Loading...</div>;
+  }
 
   if (error) {
     return <div className="p-6 text-red-600">Error: {error}</div>;
   }
 
-  // Calculate total investment
-  // const totalInvestment = portfolioData?.activeLoans?.reduce((sum, loan) => 
-  //   sum + (loan.status === 'approved' || loan.status === 'disbursed' ? loan.loanAmount : 0), 0) || 0;
-  const totalInvestment = portfolioData?.stats?.totalInvestment;
+  // Calculate total investment from stats
+  const totalInvestment = portfolioData?.stats?.totalInvestment || 0;
+  
+  // Calculate total returns using avgInterestRate from stats
+  const totalReturns = portfolioData?.stats?.totalReturnsEarned || 
+    (totalInvestment * (portfolioData?.stats?.avgInterestRate / 100));
+
+  // Calculate number of active loans
+  const activeLoansCount = portfolioData?.activeLoans?.filter(loan => 
+    loan.status === 'approved' || loan.status === 'disbursed'
+  ).length || 0;
+
+  // Get average interest rate from stats
+  const avgInterestRate = portfolioData?.stats?.avgInterestRate || 0;
+
   // Prepare monthly returns data
-  const monthlyReturns = portfolioData?.loanDetails 
-    ?.filter(loan => loan.status === 'approved' || loan.status === 'disbursed')
-    ?.map((loan, index) => ({
-      month: new Date(loan.createdAt).toLocaleString('default', { month: 'short' }),
-      returns: loan.loanAmount * (loan.interestRate / 100)
-    })) || [];
+  const monthlyReturns = portfolioData?.loanDetails?.map(loan => ({
+    month: new Date().toLocaleString('default', { month: 'short' }),
+    returns: loan.loanAmount * (loan.interestRate / 100) / 12
+  })) || [];
 
   // Calculate investment distribution
-  const loanCategories = portfolioData?.activeLoans?.reduce((acc, loan) => {
-    if (loan.status === 'approved' || loan.status === 'disbursed') {
-      acc[loan.loanCategory] = (acc[loan.loanCategory] || 0) + loan.loanAmount;
+  const investmentDistribution = portfolioData?.loanDetails?.reduce((acc, loan) => {
+    const purpose = loan.purpose.charAt(0).toUpperCase() + loan.purpose.slice(1);
+    const existingPurpose = acc.find(item => item.name === purpose);
+    
+    if (existingPurpose) {
+      existingPurpose.value += (loan.loanAmount / totalInvestment) * 100;
+    } else {
+      acc.push({
+        name: purpose,
+        value: (loan.loanAmount / totalInvestment) * 100
+      });
     }
     return acc;
-  }, {});
+  }, []) || [];
 
-  const investmentDistribution = Object.entries(loanCategories || {}).map(([name, value]) => ({
-    name: name.charAt(0).toUpperCase() + name.slice(1),
-    value: (value / totalInvestment) * 100
-  }));
-  const averageInterestRate = 0;
-  const loans = portfolioData?.loanDetails;
   const COLORS = ['#2563eb', '#10b981', '#8b5cf6', '#f59e0b'];
 
   const formatCurrency = (amount) => {
@@ -101,9 +111,7 @@ const PortfolioOverview = () => {
             </div>
             <div>
               <p className="text-sm text-gray-600">Total Returns</p>
-              <p className="text-2xl font-bold text-gray-900">
-                {formatCurrency(totalInvestment * (portfolioData?.avgInterestRate / 100))}
-              </p>
+              <p className="text-2xl font-bold text-gray-900">{formatCurrency(totalReturns)}</p>
             </div>
           </div>
         </div>
@@ -115,11 +123,7 @@ const PortfolioOverview = () => {
             </div>
             <div>
               <p className="text-sm text-gray-600">Active Loans</p>
-              <p className="text-2xl font-bold text-gray-900">
-                {portfolioData?.activeLoans?.filter(loan => 
-                  loan.status === 'approved' || loan.status === 'disbursed'
-                ).length || 0}
-              </p>
+              <p className="text-2xl font-bold text-gray-900">{activeLoansCount}</p>
             </div>
           </div>
         </div>
@@ -131,7 +135,7 @@ const PortfolioOverview = () => {
             </div>
             <div>
               <p className="text-sm text-gray-600">Avg. Interest Rate</p>
-              <p className="text-2xl font-bold text-gray-900">{portfolioData?.avgInterestRate}%</p>
+              <p className="text-2xl font-bold text-gray-900">{avgInterestRate}%</p>
             </div>
           </div>
         </div>

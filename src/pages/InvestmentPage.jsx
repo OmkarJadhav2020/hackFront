@@ -131,6 +131,7 @@ const InvestmentPage = () => {
       console.log(response.data);
       setLoans(response.data);
       setFilteredLoans(response.data);
+      console.log(response.data)
     } catch (err) {
       console.log(err.message || "Failed to fetch loans");
     } finally {
@@ -212,8 +213,8 @@ const InvestmentPage = () => {
     <div className="p-6 max-w-7xl mx-auto">
       <ToastContainer position="top-right" autoClose={5000} />
       {/* Header */}
-      <div className="mb-8">
-        <h1 className="text-2xl font-bold mb-2">Investment Opportunities</h1>
+      <div className="mb-4">
+        <h1 className="text-2xl font-bold mb-1">Investment Opportunities</h1>
         <p className="text-gray-600">
           Discover and invest in verified loan requests
         </p>
@@ -221,7 +222,7 @@ const InvestmentPage = () => {
 
       {/* Filters and Sorting */}
 
-      <div className="mb-6 space-y-4">
+      <div className="mb-3 space-y-4">
         <div className="flex items-center gap-2">
           <Filter size={20} className="text-gray-500" />
           <select
@@ -229,16 +230,16 @@ const InvestmentPage = () => {
             value={selectedCategory}
             onChange={(e) => setSelectedCategory(e.target.value)}
           >
-            <option value="all">All Categories</option>
+            <option value="all text-sm">All Categories</option>
             <option value="personal">Personal Loans</option>
             <option value="business">Business Loans</option>
           </select>
         </div>
 
-        <div className="relative">
+        <div className="relative ">
           <div
             id="sortScroll"
-            className="flex gap-2 overflow-x-auto py-2 scroll-smooth no-scrollbar"
+            className="flex gap-2 text-sm overflow-x-auto py-2 scroll-smooth no-scrollbar"
           >
             <SortOption
               label="Highest Interest"
@@ -292,7 +293,7 @@ const InvestmentPage = () => {
                 </span>
                 <div className="flex flex-col items-end">
                   <span className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-blue-800 bg-clip-text text-transparent">
-                    {loan.interestRate}%
+                    {loan.interestRate}% + {2}%
                   </span>
                   <span className="text-sm text-gray-500 font-medium">APR</span>
                 </div>
@@ -302,11 +303,11 @@ const InvestmentPage = () => {
               <div className="flex-1 min-h-[200px] flex flex-col">
                 <h3 className="text-lg font-semibold text-gray-900 mb-2 line-clamp-1">
                   {/* {Test title} */}
-                  Loan ID : {loan._id}
+                  Loan ID : {loan._id.slice(0,4)}
                 </h3>
                 <p className="text-gray-600 mb-4 line-clamp-2 flex-grow">
                   {/* {loan.notifications.message} */}
-                  Deadline : {Date(loan.fundingDeadline)}
+                  {`Deadline: ${new Date(loan.fundingDeadline).toLocaleDateString('en-GB')}`}
                 </p>
 
                 {/* Details Section */}
